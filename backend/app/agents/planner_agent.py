@@ -1,27 +1,15 @@
-import logging
-from typing import Dict, Any
+async def planner_agent(prompt: str):
 
-logger = logging.getLogger(__name__)
+    prompt = prompt.lower()
 
-async def planner_agent(prompt: str) -> Dict[str, Any]:
-    """
-    Planner Agent - Routes tasks to appropriate agents
-    """
-    logger.info(f"Planner Agent received: {prompt}")
-    
-    # Analyze prompt and plan execution
-    plan = {
-        "steps": [
-            "Analyze task requirements",
-            "Route to appropriate agent",
-            "Execute task",
-            "Validate results"
-        ],
-        "estimated_time": "5s"
-    }
-    
-    return {
-        "plan": plan,
-        "next_action": "Execute plan",
-        "confidence": 0.95
-    }
+    if "code" in prompt:
+        return "Routing task to Coding Agent"
+
+    elif "security" in prompt:
+        return "Routing task to Security Agent"
+
+    elif "research" in prompt:
+        return "Routing task to Research Agent"
+
+    else:
+        return "General AI execution complete"
