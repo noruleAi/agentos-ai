@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-import uvicorn
+import requests
 
 app = FastAPI()
+
+API_KEY = "sk-or-v1- d7bbb3126122552ede45dafcc8215a9995c90 fd2439c441e670e767156479e65""
 
 @app.get("/")
 async def root():
@@ -13,8 +15,42 @@ async def root():
 @app.get("/chat")
 async def chat(message: str):
 
-    return {
-        "reply": "Hello " + message
-    }
+    response = requests.post(
 
-uvicorn.run(app, host="0.0.0.0", port=8000)
+        "https://openrouter.ai/api/v1/chat/completions",
+
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+
+        json={
+
+            "model": "openai/gpt-4.1-mini",
+
+            "messages": [
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+
+            "max_tokens": 200
+        }
+    )
+
+    data = response.json()
+
+    print(data)
+
+    if "choices" in data:
+
+        reply = data["choices"][0]["message"]["content"]
+
+    else:
+
+        reply = str(data)
+
+    return {
+        "reply": reply
+    }
