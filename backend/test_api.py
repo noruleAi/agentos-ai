@@ -4,6 +4,7 @@ import os
 
 app = FastAPI()
 
+# Read API key from Railway Variables
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 @app.get("/")
@@ -26,6 +27,7 @@ async def chat(message: str):
         },
 
         json={
+
             "model": "openai/gpt-4.1-mini",
 
             "messages": [
@@ -40,6 +42,8 @@ async def chat(message: str):
     )
 
     data = response.json()
+
+    print(data)
 
     if "choices" in data:
 
