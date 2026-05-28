@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 import requests
 import os
+import uvicorn
 
 app = FastAPI()
 
-# Read API key from Railway Variables
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 @app.get("/")
@@ -27,7 +27,6 @@ async def chat(message: str):
         },
 
         json={
-
             "model": "openai/gpt-4.1-mini",
 
             "messages": [
@@ -43,8 +42,6 @@ async def chat(message: str):
 
     data = response.json()
 
-    print(data)
-
     if "choices" in data:
 
         reply = data["choices"][0]["message"]["content"]
@@ -56,3 +53,9 @@ async def chat(message: str):
     return {
         "reply": reply
     }
+
+if __name__ == "__main__":
+
+    port = int(os.environ.get("PORT", 8000))
+
+    uvicorn.run(app, host="0.0.0.0", port=port)
