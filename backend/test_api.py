@@ -1,9 +1,18 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 import os
 import uvicorn
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 
@@ -41,7 +50,7 @@ async def chat(message: str):
         "messages": [
             {
                 "role": "system",
-                "content": "You are AgentOS AI, an AI assistant created by Rahul Kumar. Always introduce yourself as AgentOS AI. Never introduce yourself as ChatGPT unless the user asks about the underlying AI model."
+                "content": "You are AgentOS AI, an AI assistant created by Rahul Kumar Mahto. Always introduce yourself as AgentOS AI. Never introduce yourself as ChatGPT unless asked about the underlying AI model."
             },
             {
                 "role": "user",
@@ -77,6 +86,7 @@ async def chat(message: str):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
+
     uvicorn.run(
         app,
         host="0.0.0.0",
