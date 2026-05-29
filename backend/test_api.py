@@ -40,6 +40,10 @@ async def chat(message: str):
         "model": "openai/gpt-4.1-mini",
         "messages": [
             {
+                "role": "system",
+                "content": "You are AgentOS AI, an AI assistant created by Rahul Kumar. Always introduce yourself as AgentOS AI. Never introduce yourself as ChatGPT unless the user asks about the underlying AI model."
+            },
+            {
                 "role": "user",
                 "content": message
             }
