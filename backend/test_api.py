@@ -1,3 +1,12 @@
+from fastapi import FastAPI
+import requests
+import os
+import uvicorn
+
+app = FastAPI()
+
+API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+
 @app.get("/")
 async def root():
     return {
@@ -38,15 +47,34 @@ async def chat(message: str):
         "max_tokens": 200
     }
 
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers=headers,
-        json=payload,
-        timeout=30
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        data = response.json()
+
+        if "choices" in data:
+            return {
+                "reply": data["choices"][0]["message"]["content"]
+            }
+
+        return {
+            "error": data
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port
     )
-
-    data = response.json()
-
-    return {
-        "reply": data["choices"][0]["message"]["content"]
-    }
