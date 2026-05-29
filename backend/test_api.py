@@ -5,72 +5,46 @@ import uvicorn
 
 app = FastAPI()
 
-# Read API key from Railway Variables
 API_KEY = os.getenv("OPENROUTER_API_KEY")
-
 
 @app.get("/")
 async def root():
-    return {
-        "status": "AgentOS AI Running",
-        "api_key_loaded": API_KEY is not None
-    }
-
+    return {"status": "AgentOS AI Running"}
 
 @app.get("/debug")
 async def debug():
     return {
         "has_key": bool(API_KEY),
-        "api_key_loaded": API_KEY is not None
+        "length": len(API_KEY) if API_KEY else 0,
+        "prefix": API_KEY[:8] if API_KEY else ""
     }
-
 
 @app.get("/chat")
 async def chat(message: str):
 
     if not API_KEY:
-        return {
-            "error": "OPENROUTER_API_KEY not found in Railway Variables"
+        return {"error": "OPENROUTER_API_KEY missing"}
+
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "openai/gpt-4.1-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+            "max_tokens": 200
         }
+    )
 
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "openai/gpt-4.1-mini",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": message
-                    }
-                ],
-                "max_tokens": 200
-            },
-            timeout=30
-        )
-
-        data = response.json()
-
-        if "choices" in data:
-            reply = data["choices"][0]["message"]["content"]
-            return {"reply": reply}
-
-        return {"error": data}
-
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
-
+    return response.json()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=port
-    )
+    uvicorn.run(app, host="0.0.0.0", port=port)
