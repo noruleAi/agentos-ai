@@ -9,16 +9,12 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 @app.get("/")
 async def root():
-
-    return {
-        "status": "AgentOS AI Running"
-    }
+    return {"status": "AgentOS AI Running"}
 
 @app.get("/chat")
 async def chat(message: str):
 
     response = requests.post(
-
         "https://openrouter.ai/api/v1/chat/completions",
 
         headers={
@@ -28,14 +24,12 @@ async def chat(message: str):
 
         json={
             "model": "openai/gpt-4.1-mini",
-
             "messages": [
                 {
                     "role": "user",
                     "content": message
                 }
             ],
-
             "max_tokens": 200
         }
     )
@@ -43,16 +37,11 @@ async def chat(message: str):
     data = response.json()
 
     if "choices" in data:
-
         reply = data["choices"][0]["message"]["content"]
-
     else:
-
         reply = str(data)
 
-    return {
-        "reply": reply
-    }
+    return {"reply": reply}
 
 if __name__ == "__main__":
 
