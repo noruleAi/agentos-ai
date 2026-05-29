@@ -5,17 +5,19 @@ import uvicorn
 
 app = FastAPI()
 
-API_KEY = os.getenv("OPENROUTER_API_KEY")
+API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 
 @app.get("/")
 async def root():
-    return {"status": "AgentOS AI Running"}
+    return {
+        "status": "AgentOS AI Running"
+    }
 
 @app.get("/debug")
 async def debug():
     return {
         "has_key": bool(API_KEY),
-        "length": len(API_KEY) if API_KEY else 0,
+        "length": len(API_KEY),
         "prefix": API_KEY[:8] if API_KEY else ""
     }
 
@@ -23,28 +25,47 @@ async def debug():
 async def chat(message: str):
 
     if not API_KEY:
-        return {"error": "OPENROUTER_API_KEY missing"}
-
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": "openai/gpt-4.1-mini",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ],
-            "max_tokens": 200
+        return {
+            "error": "OPENROUTER_API_KEY not found"
         }
-    )
 
-    return response.json()
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://agentos-ai-production.up.railway.app",
+        "X-Title": "AgentOS AI"
+    }
+
+    payload = {
+        "model": "openai/gpt-4.1-mini",
+        "messages": [
+            {
+                "role": "user",
+                "content": message
+            }
+        ],
+        "max_tokens": 200
+    }
+
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        return response.json()
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port
+    )
